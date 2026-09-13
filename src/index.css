@@ -190,9 +190,15 @@ nav.dark {
 }
 
 .logo img {
-  height: auto;
-  width: 64px;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
   display: block;
+}
+
+.logo:focus-visible {
+  outline: 1px solid var(--muted-gold);
+  outline-offset: 3px;
 }
 
 .logo h1 {
@@ -325,7 +331,7 @@ nav.dark .nav-links a {
   }
 
   .logo img {
-    width: 56px;
+    height: 36px;
   }
 
   .logo h1 {
@@ -345,7 +351,7 @@ nav.dark .nav-links a {
   }
 
   .logo img {
-    width: 52px;
+    height: 34px;
   }
 
   .logo {

@@ -1,24 +1,17 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+// Sections tracked for the navbar active state (single-page scroll site).
+const VISIBLE_SECTION_IDS = ['home', 'projects', 'about', 'contact'];
+
 export default function App() {
   const [navDark, setNavDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
-    const sectionIds = ['hero', 'projects', 'philosophy', 'contact'];
-
     const handleScroll = () => {
       setNavDark(window.scrollY > 100);
-      let current = 'hero';
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 160) {
-          current = id;
-        }
-      }
-      setActiveSection(current);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -26,42 +19,73 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id) => {
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+  }, [menuOpen]);
+
+  // Single-page site: highlight the navbar item whose section is in view.
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      // A thin horizontal band around the viewport centre decides which
+      // section is "current"; gap sections (e.g. the brand statement) simply
+      // keep the last active item instead of clearing it.
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
+    );
+
+    VISIBLE_SECTION_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // In-page smooth scroll helper (used by the hero scroll indicator).
+  const scrollToId = (id) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
-      setMenuOpen(false);
     }
   };
 
   const navLinks = [
-    { label: 'Home', id: 'hero' },
+    { label: 'Home', id: 'home' },
     { label: 'Projects', id: 'projects' },
-    { label: 'Gallery', id: 'gallery' },
-    { label: 'About Us', id: 'philosophy' },
+    { label: 'About Us', id: 'about' },
     { label: 'Contact Us', id: 'contact' }
   ];
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
-  }, [menuOpen]);
 
   return (
     <>
       {/* Navigation */}
       <nav className={navDark ? 'dark' : 'light'}>
         <div className="nav-content">
-          <div className="logo">
+          <a
+            href="#home"
+            className="logo"
+            aria-label="JAC Creation - Back to home section"
+            onClick={() => setMenuOpen(false)}
+          >
             <img src="/logo.png" alt="JAC Creation" />
             <h1>JAC Creation</h1>
-          </div>
+          </a>
           <ul className={`nav-links ${menuOpen ? 'active' : ''}`}>
             {navLinks.map((link) => (
               <li key={link.id}>
                 <a
+                  href={`#${link.id}`}
                   className={activeSection === link.id ? 'active' : undefined}
                   aria-current={activeSection === link.id ? 'true' : undefined}
-                  onClick={() => scrollToSection(link.id)}
+                  onClick={() => setMenuOpen(false)}
                 >
                   {link.label}
                 </a>
@@ -83,7 +107,7 @@ export default function App() {
       </nav>
 
       {/* Hero Section */}
-      <section id="hero" className="hero">
+      <section id="home" className="hero">
         <img
           className="hero-image"
           src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=2400&h=1350&fit=crop&auto=format&q=80"
@@ -101,11 +125,11 @@ export default function App() {
           role="button"
           tabIndex={0}
           aria-label="Scroll to the next section"
-          onClick={() => scrollToSection('philosophy')}
+          onClick={() => scrollToId('brand-statement')}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              scrollToSection('philosophy');
+              scrollToId('brand-statement');
             }
           }}
         >
@@ -117,8 +141,18 @@ export default function App() {
         </div>
       </section>
 
+      {/* Brand Statement Section */}
+      <section id="brand-statement" className="brand-statement">
+        <div className="brand-statement-content">
+          <h2>Architecture as a Quiet Act</h2>
+          <p className="brand-statement-byline">
+            We believe the most powerful architecture speaks softly. It enhances life without demanding attention, creates beauty through restraint, and leaves a legacy of meaningful places where human experiences unfold.
+          </p>
+        </div>
+      </section>
+
       {/* Philosophy Section */}
-      <section id="philosophy" className="philosophy">
+      <section id="about" className="philosophy">
         <div className="philosophy-content">
           <div className="philosophy-text">
             <div className="eyebrow">Philosophy</div>
@@ -176,7 +210,7 @@ export default function App() {
 
       {/* Projects Grid Section */}
       <section id="projects" className="projects">
-        <div id="gallery" className="projects-container">
+        <div className="projects-container">
           <div className="projects-header">
             <div className="eyebrow">Selected Work</div>
             <h2>Our Portfolio</h2>
@@ -261,16 +295,6 @@ export default function App() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Brand Statement Section */}
-      <section className="brand-statement">
-        <div className="brand-statement-content">
-          <h2>Architecture as a Quiet Act</h2>
-          <p className="brand-statement-byline">
-            We believe the most powerful architecture speaks softly. It enhances life without demanding attention, creates beauty through restraint, and leaves a legacy of meaningful places where human experiences unfold.
-          </p>
         </div>
       </section>
 
