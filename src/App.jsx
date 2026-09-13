@@ -86,7 +86,7 @@ export default function App() {
       <section id="hero" className="hero">
         <img
           className="hero-image"
-          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&h=900&fit=crop"
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=2400&h=1350&fit=crop&auto=format&q=80"
           alt="Modern architecture with natural light"
         />
         <div className="hero-overlay"></div>
